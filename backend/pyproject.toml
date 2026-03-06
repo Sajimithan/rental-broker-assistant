@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "rental-broker-assistant-backend"
+version = "0.1.0"
+description = "Backend for Rental Broker Assistant"
+authors = ["Admin"]
+
+[tool.pytest.ini_options]
+addopts = "-v --cov=app --cov-report=term-missing"
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

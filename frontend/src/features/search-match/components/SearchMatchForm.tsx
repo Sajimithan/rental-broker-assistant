@@ -1,15 +1,28 @@
 import { useState } from 'react';
 import { fetchApi } from '../../../lib/api/client';
 
+interface MatchResult {
+  property_type?: string;
+  city?: string;
+  rent?: string | number;
+  explanation?: string;
+  score?: number;
+}
+
+interface SearchResponse {
+  understood_query: Record<string, unknown>;
+  matches: MatchResult[];
+}
+
 export function SearchMatchForm() {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<SearchResponse | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSearch = async () => {
     setLoading(true);
     try {
-      const data = await fetchApi<any>('/search/query', {
+      const data = await fetchApi<SearchResponse>('/search/query', {
         method: 'POST',
         body: JSON.stringify({ query }),
       });
@@ -55,7 +68,7 @@ export function SearchMatchForm() {
             <p className="text-gray-500">No matches found.</p>
           ) : (
             <div className="grid gap-4">
-              {results.matches.map((match: any, i: number) => (
+              {results.matches.map((match: MatchResult, i: number) => (
                 <div key={i} className="border p-4 rounded flex justify-between items-center">
                   <div>
                     <h4 className="font-bold">{match.property_type || 'Property'} in {match.city || 'Unknown Location'}</h4>

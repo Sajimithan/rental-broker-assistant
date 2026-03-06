@@ -1,15 +1,21 @@
 import { useState } from 'react';
 import { fetchApi } from '../../../lib/api/client';
 
+type PreviewData = Record<string, unknown>;
+
+interface PreviewResponse {
+  extracted_data: PreviewData;
+}
+
 export function NeededAdForm() {
   const [rawText, setRawText] = useState('');
-  const [previewData, setPreviewData] = useState<any>(null);
+  const [previewData, setPreviewData] = useState<PreviewData | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleExtract = async () => {
     setLoading(true);
     try {
-      const data = await fetchApi<any>('/extraction/needed/preview', {
+      const data = await fetchApi<PreviewResponse>('/extraction/needed/preview', {
         method: 'POST',
         body: JSON.stringify({ raw_text: rawText, ad_type: 'NEEDED' }),
       });
@@ -70,7 +76,7 @@ export function NeededAdForm() {
                 <input
                   type="text"
                   className="border p-1 rounded"
-                  value={previewData[key] === null ? '' : typeof previewData[key] === 'object' ? JSON.stringify(previewData[key]) : previewData[key]}
+                  value={previewData[key] === null ? '' : typeof previewData[key] === 'object' ? JSON.stringify(previewData[key]) : String(previewData[key])}
                   onChange={(e) => setPreviewData({...previewData, [key]: e.target.value})}
                 />
               </div>

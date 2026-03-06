@@ -3,7 +3,7 @@ from app.core.config import settings
 
 def get_openrouter_client() -> ChatOpenAI:
     return ChatOpenAI(
-        model="google/gemma-3-27b-it:free",
+        model="qwen/qwen3-vl-235b-a22b-thinking",
         temperature=0.0,
         openai_api_key=settings.OPENROUTER_API_KEY,
         openai_api_base="https://openrouter.ai/api/v1",

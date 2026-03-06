@@ -18,6 +18,10 @@ async def search_natural_language(request: SearchQuery, db: Session = Depends(ge
     extract_req = ExtractionPreviewRequest(raw_text=request.query, ad_type="NEEDED")
     preview = await extraction_service.preview_extraction(extract_req)
     
+    if "parsing_error" in preview.warnings:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=503, detail=f"AI Extraction failed due to rate limits or API error: {preview.warnings['parsing_error']}")
+        
     # 2. Use that to search db
     needed_ad = NeededAdBase(**preview.extracted_data)
     

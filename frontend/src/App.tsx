@@ -72,8 +72,8 @@ export default function App() {
                 </svg>
               </div>
               <div>
-                <p className="font-bold text-sm leading-tight">Evaluno AI</p>
-                <p className="text-[10px] text-white/40 leading-tight">Rental Broker Assistant</p>
+                <p className="font-bold text-sm leading-tight">Rental Broker</p>
+                <p className="text-[10px] text-white/40 leading-tight">AI Assistant</p>
               </div>
             </div>
           </div>
@@ -103,7 +103,7 @@ export default function App() {
           {/* Footer */}
           <div className="px-6 py-5 border-t border-white/10">
             <p className="text-[10px] text-white/30 leading-relaxed">
-              © 2025 Evaluno AI<br/>
+              © 2025 Rental Broker Assistant<br/>
               All rights reserved
             </p>
           </div>

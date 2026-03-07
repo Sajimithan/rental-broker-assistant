@@ -2,10 +2,22 @@ import { useState } from 'react';
 import { AvailableAdPanel } from './features/available-ads/components/AvailableAdPanel';
 import { NeededAdPanel } from './features/needed-ads/components/NeededAdPanel';
 import { ChatSearchPanel } from './features/search-match/components/ChatSearchPanel';
+import { MatchingDashboard } from './features/search-match/components/MatchingDashboard';
 
-type View = 'search' | 'available' | 'needed';
+type View = 'search' | 'available' | 'needed' | 'matches';
 
 const NAV = [
+  {
+    id: 'matches' as View,
+    label: 'Matches',
+    sub: 'Auto cross-match',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+    ),
+  },
   {
     id: 'search' as View,
     label: 'Find a Rental',
@@ -140,10 +152,11 @@ export default function App() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 flex flex-col overflow-hidden">
+          {view === 'matches'   && <MatchingDashboard />}
           {view === 'search'    && <ChatSearchPanel />}
-          {view === 'available' && <AvailableAdPanel />}
-          {view === 'needed'    && <NeededAdPanel />}
+          {view === 'available' && <div className="flex-1 overflow-y-auto"><AvailableAdPanel /></div>}
+          {view === 'needed'    && <div className="flex-1 overflow-y-auto"><NeededAdPanel /></div>}
         </main>
       </div>
     </div>

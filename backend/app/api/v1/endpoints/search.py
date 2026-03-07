@@ -32,17 +32,15 @@ async def search_natural_language(request: SearchQuery, db: Session = Depends(ge
     
     results = matching_engine.find_matches_for_needed(db, mock_needed)
     
+    from app.domain.available_ads.schemas import AvailableAdInDBBase
     return {
         "understood_query": preview.extracted_data,
         "matches": [
             {
-                "id": r["available_ad"].id,
                 "score": r["score"],
                 "explanation": r["explanation"],
-                "city": r["available_ad"].city,
-                "property_type": r["available_ad"].property_type,
-                "rent": r["available_ad"].rent_max
-            } for r in results 
+                "ad": AvailableAdInDBBase.model_validate(r["available_ad"]).model_dump()
+            } for r in results[:1] 
         ]
     }
 

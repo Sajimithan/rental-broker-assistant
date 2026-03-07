@@ -50,82 +50,123 @@ export function SearchMatchForm() {
       setResults(data);
     } catch (error) {
       console.error(error);
-      alert('Failed to search');
+      alert('Failed to search. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  const fmt = (val: string | number | null | undefined, fallback = 'N/A') =>
+    val != null && val !== '' ? String(val) : fallback;
+
+  const fmtRent = (ad: AvailableAd) => {
+    if (ad.rent_max) return `Rs. ${ad.rent_max.toLocaleString()}`;
+    if (ad.rent_min) return `Rs. ${ad.rent_min.toLocaleString()}`;
+    return 'N/A';
+  };
+
+  const fmtBool = (val: boolean | null | undefined, trueLabel = 'Yes', falseLabel = 'No') =>
+    val == null ? 'N/A' : val ? trueLabel : falseLabel;
+
   return (
     <div className="p-4 bg-white rounded-lg shadow space-y-4">
-      <h2 className="text-xl font-bold">Chatbot-style Search</h2>
+      <h2 className="text-xl font-bold">Find a Rental</h2>
       <div className="flex gap-2">
         <input
           type="text"
           className="flex-1 p-2 border rounded"
-          placeholder="e.g. looking for room around Maharagama for 2 boys under 25000"
+          placeholder="e.g. annex in Hokandara for couple under 25000"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
         />
-        <button 
+        <button
           onClick={handleSearch}
-          disabled={loading || !query}
-          className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50"
+          disabled={loading || !query.trim()}
+          className="bg-green-600 text-white px-5 py-2 rounded disabled:opacity-50 font-medium"
         >
-          {loading ? 'Searching...' : 'Search'}
+          {loading ? 'Searching…' : 'Search'}
         </button>
       </div>
 
       {results && (
-        <div className="mt-8 space-y-4">
-          <div className="bg-blue-50 p-4 rounded text-sm">
-            <h3 className="font-semibold text-blue-800">Understood Request:</h3>
-            <pre className="mt-2 text-xs overflow-auto">{JSON.stringify(results.understood_query, null, 2)}</pre>
-          </div>
-
-          <h3 className="font-semibold text-lg border-b pb-2">Top Matches</h3>
+        <div className="mt-6 space-y-4">
           {results.matches.length === 0 ? (
-            <p className="text-gray-500">No matches found.</p>
+            <p className="text-gray-500 text-center py-8">No matching rentals found. Try broadening your search.</p>
           ) : (
-            <div className="grid gap-4">
-              {results.matches.map((match: MatchResult, i: number) => (
-                <div key={i} className="border p-4 rounded overflow-hidden">
-                  <div className="flex justify-between items-center bg-gray-50 border-b p-4 -mx-4 -mt-4 mb-4">
-                    <div>
-                      <h4 className="font-bold text-lg">{match.ad.property_type || 'Property'} in {match.ad.city || 'Unknown Location'}</h4>
-                      <p className="text-sm font-semibold text-green-700 mt-1">{match.explanation}</p>
+            <>
+              <p className="text-sm text-gray-500">{results.matches.length} match{results.matches.length > 1 ? 'es' : ''} found</p>
+              <div className="grid gap-4">
+                {results.matches.map((match: MatchResult, i: number) => (
+                  <div key={i} className="border rounded-lg overflow-hidden">
+                    {/* Header */}
+                    <div className="flex justify-between items-start bg-gray-50 border-b px-5 py-4">
+                      <div>
+                        <h4 className="font-bold text-lg capitalize">
+                          {fmt(match.ad.property_type, 'Property')} — {fmt(match.ad.city, 'Location unknown')}
+                          {match.ad.area ? `, ${match.ad.area}` : ''}
+                        </h4>
+                        <p className="text-xs text-gray-400 mt-0.5">Source: {fmt(match.ad.source, 'unknown')}</p>
+                      </div>
+                      <span className="text-lg font-bold bg-green-100 text-green-800 border border-green-200 px-3 py-1 rounded-full whitespace-nowrap ml-4">
+                        {Math.round(match.score)}% Match
+                      </span>
                     </div>
-                    <div className="text-2xl font-bold bg-green-100 text-green-800 border-2 border-green-200 px-4 py-2 rounded-lg">
-                      {Math.round(match.score)}% Match
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm mt-4">
-                    <div><span className="text-gray-500">Rent:</span> <span className="font-medium">{match.ad.rent_max ? `Rs. ${match.ad.rent_max}` : (match.ad.rent_min ? `Rs. ${match.ad.rent_min}` : 'N/A')}</span></div>
-                    <div><span className="text-gray-500">Contact:</span> <span className="font-medium">{match.ad.contact_phone || match.ad.contact_whatsapp || 'Unknown'}</span></div>
-                    <div><span className="text-gray-500">Area:</span> <span className="font-medium">{match.ad.area || 'N/A'}</span></div>
-                    <div><span className="text-gray-500">Rooms:</span> <span className="font-medium">{match.ad.rooms || 'N/A'}</span></div>
-                    <div><span className="text-gray-500">Bathrooms:</span> <span className="font-medium">{match.ad.bathrooms || 'N/A'}</span></div>
-                    <div><span className="text-gray-500">Gender Pref:</span> <span className="font-medium">{match.ad.gender_preference || 'Any'}</span></div>
-                  </div>
 
-                  {match.ad.special_notes && (
-                    <div className="mt-4 pt-4 border-t text-sm">
-                      <span className="text-gray-500 block mb-1">Notes:</span>
-                      <p className="text-gray-800">{match.ad.special_notes}</p>
+                    {/* Key Details Grid */}
+                    <div className="px-5 py-4 grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <p className="text-gray-400 text-xs uppercase tracking-wide mb-0.5">Rent</p>
+                        <p className="font-semibold text-gray-800">{fmtRent(match.ad)}/mo</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-xs uppercase tracking-wide mb-0.5">Contact</p>
+                        <p className="font-semibold text-gray-800">
+                          {match.ad.contact_phone
+                            ? <a href={`tel:${match.ad.contact_phone}`} className="text-blue-600 underline">{match.ad.contact_phone}</a>
+                            : fmt(match.ad.contact_whatsapp, 'Not provided')}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-xs uppercase tracking-wide mb-0.5">For</p>
+                        <p className="font-semibold text-gray-800 capitalize">
+                          {match.ad.people_count ? `${match.ad.people_count} person(s) · ` : ''}
+                          {fmt(match.ad.gender_preference, 'Any')}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-xs uppercase tracking-wide mb-0.5">Rooms</p>
+                        <p className="font-semibold text-gray-800">{fmt(match.ad.rooms)}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-xs uppercase tracking-wide mb-0.5">Bathrooms</p>
+                        <p className="font-semibold text-gray-800">{fmt(match.ad.bathrooms)}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-xs uppercase tracking-wide mb-0.5">Furnished</p>
+                        <p className="font-semibold text-gray-800">{fmtBool(match.ad.furnished_status)}</p>
+                      </div>
                     </div>
-                  )}
 
-                  <div className="mt-4 pt-4 border-t">
-                     <span className="text-gray-500 text-xs block mb-2">Raw Reference Data:</span>
-                     <pre className="text-xs text-gray-400 bg-gray-50 p-2 rounded overflow-auto max-h-40">
-                       {JSON.stringify(match.ad, null, 2)}
-                     </pre>
+                    {/* Feature Badges */}
+                    <div className="px-5 pb-4 flex flex-wrap gap-2">
+                      {match.ad.attached_bathroom && <span className="text-xs bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-full">Attached Bath</span>}
+                      {match.ad.separate_entrance && <span className="text-xs bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-full">Separate Entrance</span>}
+                      {match.ad.parking_available === false && <span className="text-xs bg-red-50 text-red-600 border border-red-100 px-2 py-0.5 rounded-full">No Parking</span>}
+                      {match.ad.parking_available === true && <span className="text-xs bg-green-50 text-green-700 border border-green-100 px-2 py-0.5 rounded-full">Parking</span>}
+                    </div>
+
+                    {/* Notes */}
+                    {match.ad.special_notes && (
+                      <div className="px-5 pb-5 border-t pt-3">
+                        <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Notes</p>
+                        <p className="text-sm text-gray-700">{match.ad.special_notes}</p>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       )}

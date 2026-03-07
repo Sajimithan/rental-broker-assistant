@@ -7,17 +7,26 @@ def compute_match_score(available: AvailableAd, needed: NeededAd) -> float:
     score = 0.0
     
     # Base match: Rent overlap
-    if available.rent_max and needed.rent_min:
-        if available.rent_max >= needed.rent_min:
-            score += 20.0
+    # Typically needed ads specify a max budget, and available ads specify an asking price (min or max)
+    avail_rent = available.rent_min or available.rent_max
+    needed_rent = needed.rent_max or needed.rent_min
+    
+    if avail_rent and needed_rent:
+        if avail_rent <= needed_rent:
+            score += 40.0
+    elif needed_rent is None:
+        # If user didn't specify rent, don't penalize
+        pass
     
     # Location match
-    if available.city and needed.city and available.city.lower() == needed.city.lower():
-        score += 30.0
+    if available.city and needed.city:
+        if needed.city.lower() in available.city.lower() or available.city.lower() in needed.city.lower():
+            score += 30.0
 
     # Property type fit
-    if available.property_type and needed.property_type and available.property_type.lower() == needed.property_type.lower():
-        score += 20.0
+    if available.property_type and needed.property_type:
+        if available.property_type.lower() in needed.property_type.lower() or needed.property_type.lower() in available.property_type.lower():
+            score += 20.0
 
     # Capacity
     if available.people_count and needed.people_count and available.people_count >= needed.people_count:
@@ -29,6 +38,11 @@ def compute_match_score(available: AvailableAd, needed: NeededAd) -> float:
 
     if needed.parking_available and available.parking_available:
         score += 5.0
+
+    # If the user queried almost nothing, or nothing explicitly matched but it wasn't rejected,
+    # give a tiny base score so it shows up in general searches rather than returning empty.
+    if score == 0.0 and (not needed.rent_max and not needed.rent_min and not needed.city and not needed.property_type):
+        score = 1.0
 
     return min(100.0, score)
 

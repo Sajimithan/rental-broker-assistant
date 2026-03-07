@@ -48,8 +48,8 @@ def compute_match_score(available: AvailableAd, needed: NeededAd) -> float:
 
 class MatchingEngine:
     def find_matches_for_needed(self, db: Session, needed_ad: NeededAd) -> List[dict]:
-        # Very basic deterministic filtering
-        query = db.query(AvailableAd).filter(AvailableAd.status == "ACTIVE")
+        # Include both ACTIVE and PENDING since we don't have an admin approval loop built out yet
+        query = db.query(AvailableAd).filter(AvailableAd.status.in_(["ACTIVE", "PENDING"]))
         
         if needed_ad.city:
             query = query.filter(AvailableAd.city.ilike(f"%{needed_ad.city}%"))

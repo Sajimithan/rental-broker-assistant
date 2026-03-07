@@ -1,10 +1,33 @@
 import { useState } from 'react';
 import { fetchApi } from '../../../lib/api/client';
 
+interface AvailableAd {
+  id?: number;
+  property_type?: string | null;
+  city?: string | null;
+  area?: string | null;
+  rent_min?: number | null;
+  rent_max?: number | null;
+  contact_phone?: string | null;
+  contact_whatsapp?: string | null;
+  contact_name?: string | null;
+  gender_preference?: string | null;
+  rooms?: number | null;
+  bathrooms?: number | null;
+  people_count?: number | null;
+  furnished_status?: boolean | null;
+  attached_bathroom?: boolean | null;
+  separate_entrance?: boolean | null;
+  parking_available?: boolean | null;
+  special_notes?: string | null;
+  status?: string;
+  source?: string | null;
+}
+
 interface MatchResult {
   score: number;
   explanation: string;
-  ad: Record<string, unknown>;
+  ad: AvailableAd;
 }
 
 interface SearchResponse {
@@ -61,7 +84,7 @@ export function SearchMatchForm() {
             <pre className="mt-2 text-xs overflow-auto">{JSON.stringify(results.understood_query, null, 2)}</pre>
           </div>
 
-          <h3 className="font-semibold text-lg border-b pb-2">Top Match</h3>
+          <h3 className="font-semibold text-lg border-b pb-2">Top Matches</h3>
           {results.matches.length === 0 ? (
             <p className="text-gray-500">No matches found.</p>
           ) : (

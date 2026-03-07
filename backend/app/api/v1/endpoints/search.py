@@ -40,7 +40,7 @@ async def search_natural_language(request: SearchQuery, db: Session = Depends(ge
                 "score": r["score"],
                 "explanation": r["explanation"],
                 "ad": AvailableAdInDBBase.model_validate(r["available_ad"]).model_dump()
-            } for r in results[:1] 
+            } for r in results[:3] 
         ]
     }
 

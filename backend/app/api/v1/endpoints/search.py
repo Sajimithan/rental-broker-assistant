@@ -18,6 +18,10 @@ async def search_natural_language(request: SearchQuery, db: Session = Depends(ge
     extract_req = ExtractionPreviewRequest(raw_text=request.query, ad_type="NEEDED")
     preview = await extraction_service.preview_extraction(extract_req)
     
+    if "parsing_error" in preview.warnings:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=503, detail=f"AI Extraction failed due to rate limits or API error: {preview.warnings['parsing_error']}")
+        
     # 2. Use that to search db
     needed_ad = NeededAdBase(**preview.extracted_data)
     
@@ -28,17 +32,15 @@ async def search_natural_language(request: SearchQuery, db: Session = Depends(ge
     
     results = matching_engine.find_matches_for_needed(db, mock_needed)
     
+    from app.domain.available_ads.schemas import AvailableAdInDBBase
     return {
         "understood_query": preview.extracted_data,
         "matches": [
             {
-                "id": r["available_ad"].id,
                 "score": r["score"],
                 "explanation": r["explanation"],
-                "city": r["available_ad"].city,
-                "property_type": r["available_ad"].property_type,
-                "rent": r["available_ad"].rent_max
-            } for r in results 
+                "ad": AvailableAdInDBBase.model_validate(r["available_ad"]).model_dump()
+            } for r in results[:3] 
         ]
     }
 

@@ -2,13 +2,13 @@ from typing import TypeVar, Type, Any, Dict
 from pydantic import BaseModel
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
-from app.infrastructure.llm.gemini_client import get_gemini_client
+from app.infrastructure.llm.groq_client import get_groq_client
 
 T = TypeVar('T', bound=BaseModel)
 
 class StructuredExtractor:
     def __init__(self):
-        self.llm = get_gemini_client()
+        self.llm = get_groq_client()
 
     async def extract(self, text: str, schema: Type[T], prompt_template: str) -> T:
         parser = PydanticOutputParser(pydantic_object=schema)

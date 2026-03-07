@@ -1,12 +1,33 @@
 import { useState } from 'react';
 import { fetchApi } from '../../../lib/api/client';
 
+interface AvailableAd {
+  id?: number;
+  property_type?: string | null;
+  city?: string | null;
+  area?: string | null;
+  rent_min?: number | null;
+  rent_max?: number | null;
+  contact_phone?: string | null;
+  contact_whatsapp?: string | null;
+  contact_name?: string | null;
+  gender_preference?: string | null;
+  rooms?: number | null;
+  bathrooms?: number | null;
+  people_count?: number | null;
+  furnished_status?: boolean | null;
+  attached_bathroom?: boolean | null;
+  separate_entrance?: boolean | null;
+  parking_available?: boolean | null;
+  special_notes?: string | null;
+  status?: string;
+  source?: string | null;
+}
+
 interface MatchResult {
-  property_type?: string;
-  city?: string;
-  rent?: string | number;
-  explanation?: string;
-  score?: number;
+  score: number;
+  explanation: string;
+  ad: AvailableAd;
 }
 
 interface SearchResponse {
@@ -63,20 +84,44 @@ export function SearchMatchForm() {
             <pre className="mt-2 text-xs overflow-auto">{JSON.stringify(results.understood_query, null, 2)}</pre>
           </div>
 
-          <h3 className="font-semibold text-lg border-b pb-2">Matching Available Ads</h3>
+          <h3 className="font-semibold text-lg border-b pb-2">Top Matches</h3>
           {results.matches.length === 0 ? (
             <p className="text-gray-500">No matches found.</p>
           ) : (
             <div className="grid gap-4">
               {results.matches.map((match: MatchResult, i: number) => (
-                <div key={i} className="border p-4 rounded flex justify-between items-center">
-                  <div>
-                    <h4 className="font-bold">{match.property_type || 'Property'} in {match.city || 'Unknown Location'}</h4>
-                    <p className="text-sm text-gray-600">Max Rent: {match.rent}</p>
-                    <p className="text-sm text-green-700 mt-1">{match.explanation}</p>
+                <div key={i} className="border p-4 rounded overflow-hidden">
+                  <div className="flex justify-between items-center bg-gray-50 border-b p-4 -mx-4 -mt-4 mb-4">
+                    <div>
+                      <h4 className="font-bold text-lg">{match.ad.property_type || 'Property'} in {match.ad.city || 'Unknown Location'}</h4>
+                      <p className="text-sm font-semibold text-green-700 mt-1">{match.explanation}</p>
+                    </div>
+                    <div className="text-2xl font-bold bg-green-100 text-green-800 border-2 border-green-200 px-4 py-2 rounded-lg">
+                      {Math.round(match.score)}% Match
+                    </div>
                   </div>
-                  <div className="text-2xl font-bold text-blue-600 border p-2 rounded">
-                    {match.score}%
+                  
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm mt-4">
+                    <div><span className="text-gray-500">Rent:</span> <span className="font-medium">{match.ad.rent_max ? `Rs. ${match.ad.rent_max}` : (match.ad.rent_min ? `Rs. ${match.ad.rent_min}` : 'N/A')}</span></div>
+                    <div><span className="text-gray-500">Contact:</span> <span className="font-medium">{match.ad.contact_phone || match.ad.contact_whatsapp || 'Unknown'}</span></div>
+                    <div><span className="text-gray-500">Area:</span> <span className="font-medium">{match.ad.area || 'N/A'}</span></div>
+                    <div><span className="text-gray-500">Rooms:</span> <span className="font-medium">{match.ad.rooms || 'N/A'}</span></div>
+                    <div><span className="text-gray-500">Bathrooms:</span> <span className="font-medium">{match.ad.bathrooms || 'N/A'}</span></div>
+                    <div><span className="text-gray-500">Gender Pref:</span> <span className="font-medium">{match.ad.gender_preference || 'Any'}</span></div>
+                  </div>
+
+                  {match.ad.special_notes && (
+                    <div className="mt-4 pt-4 border-t text-sm">
+                      <span className="text-gray-500 block mb-1">Notes:</span>
+                      <p className="text-gray-800">{match.ad.special_notes}</p>
+                    </div>
+                  )}
+
+                  <div className="mt-4 pt-4 border-t">
+                     <span className="text-gray-500 text-xs block mb-2">Raw Reference Data:</span>
+                     <pre className="text-xs text-gray-400 bg-gray-50 p-2 rounded overflow-auto max-h-40">
+                       {JSON.stringify(match.ad, null, 2)}
+                     </pre>
                   </div>
                 </div>
               ))}
